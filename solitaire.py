@@ -43,11 +43,11 @@ class Solitaire(Plugin):
         logger.debug(f"[Solitaire] on_handle_context. content:{content}")
         content = content.split()
         reply_text = ""
+        reply_flag = "handle"
 
         # 查询所有活动
         if content[0] in SEARCH_ALL_ACTIVITY:
             reply_text = self.query_all_activity()
-
         # 查询特定活动
         elif content[0] in SEARCH_ACTIVITY:
             reply_text = self.query_one_activity(content[1])
@@ -93,13 +93,19 @@ class Solitaire(Plugin):
             reply_text += self.query_one_activity(content[1])
 
         else:
-            reply_text = "未识别指令, 查看帮助"
+            reply_flag = "pass"
 
-        reply = Reply()
-        reply.type = ReplyType.TEXT
-        reply.content = reply_text
-        e_context["reply"] = reply
-        e_context.action = EventAction.BREAK_PASS  # 事件结束，并跳过处理context的默认逻辑
+        self.handel_reply(reply_text, reply_flag, e_context)
+
+    def handel_reply(self, reply_text, reply_flag, e_context: EventContext):
+        if reply_flag == "pass":
+            e_context.action = EventAction.CONTINUE
+        else:
+            reply = Reply()
+            reply.type = ReplyType.TEXT
+            reply.content = reply_text
+            e_context["reply"] = reply
+            e_context.action = EventAction.BREAK_PASS  # 事件结束，并跳过处理context的默认逻辑
 
     def get_help_text(self, **kwargs):
         help_text = "群接龙\n"
