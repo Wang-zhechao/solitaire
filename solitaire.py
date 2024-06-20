@@ -54,26 +54,28 @@ class Solitaire(Plugin):
 
         # 创建活动
         elif content[0] in ADD_ACTIVITY:
-            content.pop(0)
-            pattern = "(.+?):(.+)"
-            activity_name = ""
-            activity_describe = ""
-            activity_number = 0
-            for parameter in content:
-                matches = re.findall(pattern, parameter)
-                key = matches[0][0]
-                value = matches[0][1]
+            try:
+                content.pop(0)
+                pattern = "(.+?)：(.+)"
+                activity_name = ""
+                activity_describe = ""
+                activity_number = 0
+                for parameter in content:
+                    matches = re.findall(pattern, parameter)
+                    key = matches[0][0]
+                    value = matches[0][1]
 
-                if key == "活动名称":
-                    activity_name = value
-                elif key == "活动描述":
-                    activity_describe = value
-                elif key == "活动人数":
-                    activity_number = int(value)
+                    if key == "活动名称":
+                        activity_name = value
+                    elif key == "活动描述":
+                        activity_describe = value
+                    elif key == "活动人数":
+                        activity_number = int(value)
 
-            reply_text = self.create_activity(
-                activity_name, activity_describe, activity_number)
-            reply_text += self.query_all_activity()
+                reply_text = self.create_activity(activity_name, activity_describe, activity_number)
+                reply_text += self.query_all_activity()
+            except Exception:
+                reply_text = "创建活动失败"
 
         # 删除活动
         elif content[0] in DEL_ACTIVITY:
@@ -127,38 +129,29 @@ class Solitaire(Plugin):
             reply_text += f"活动描述: {activity['describe']}\n"
             reply_text += f"活动人数: {activity['number']}\n"
             reply_text += f"活动人员: \n"
-            for index, name in enumerate(activity['member']):
+            for index, name in enumerate(activity["member"]):
                 reply_text += f"{index+1}. {name}\n"
         except Exception as e:
             logger.error(f"[Solitaire] ERROR: {e}")
 
         return reply_text
 
-    def create_activity(self,
-                        activity_name: str,
-                        activity_describe: str,
-                        activity_number: int):
-        status = self.activity.add_activity(
-            activity_name, activity_describe, activity_number)
+    def create_activity(self, activity_name: str, activity_describe: str, activity_number: int):
+        status = self.activity.add_activity(activity_name, activity_describe, activity_number)
         reply_text = "创建活动成功\n" if status else "创建活动失败\n"
         return reply_text
 
-    def delete_activity(self,
-                        activity_name: str):
+    def delete_activity(self, activity_name: str):
         status = self.activity.del_activity(activity_name)
         reply_text = "删除活动成功\n" if status else "删除活动失败\n"
         return reply_text
 
-    def add_member(self,
-                   activity_name: str,
-                   nick_name: str):
+    def add_member(self, activity_name: str, nick_name: str):
         status = self.activity.add_member(activity_name, nick_name)
         reply_text = "报名活动成功\n" if status else "报名活动失败\n"
         return reply_text
 
-    def delete_member(self,
-                      activity_name: str,
-                      nick_name: str):
+    def delete_member(self, activity_name: str, nick_name: str):
         status = self.activity.del_member(activity_name, nick_name)
         reply_text = "退出活动成功\n" if status else "退出活动失败\n"
         return reply_text
